@@ -4,6 +4,8 @@
 #include <QQuickItem>
 #include <iostream>
 #include "Renderer.h"
+#include <memory>
+#include "DataLoader.h"
 
 namespace Map
 {
@@ -13,16 +15,18 @@ namespace Map
         QML_ELEMENT
 
     public:
-        Map();
+        Map( QQuickItem *parent = nullptr );
 
     public slots:
         void sync();
+        void cleanup();
 
     private slots:
         void handleWindowChanged(QQuickWindow *window);
 
     protected:
-        Renderer *m_renderer { nullptr };
+        Renderer *m_renderer{nullptr};
+        std::unique_ptr< DataLoader > m_dataLoader{nullptr};
     };
 }
 

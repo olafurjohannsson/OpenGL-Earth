@@ -2,17 +2,21 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
-
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QFile>
+#include <QJsonObject>
 
 #include <Map.h>
+
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-
-    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
-    
     qmlRegisterType<Map::Map>("Map", 1, 0, "Map");
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+
+    
 
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/qml/main.qml"));

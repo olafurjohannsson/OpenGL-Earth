@@ -1,36 +1,51 @@
 #include "Map.h"
+#include <iostream>
+#include "DataLoader.h"
 
 namespace Map
 {
 
-    Map::Map()
+    Map::Map( QQuickItem *parent ) : QQuickItem( parent )
     {
-        std::cout << "Map Created\n";
+        std::cout << "Map Created width: " << width() << " height: " << height() << "\n";
+        m_dataLoader = std::make_unique< DataLoader >();
         connect(this, &QQuickItem::windowChanged, this, &Map::handleWindowChanged);
+    }
+
+    void Map::cleanup()
+    {
+        if (m_renderer)
+        {
+            delete m_renderer;
+            m_renderer = nullptr;
+        }
     }
 
     void Map::sync()
     {
-        if (!m_renderer)
+        if (nullptr == m_renderer)
         {
-            m_renderer = new Renderer(this);
-            // connect(window(), &QQuickWindow::beforeRendering, m_renderer, &Renderer::render);
+            std::cout << "Creating Renderer width: " << width() << " height: " << height() << "\n";
+            m_renderer = new Renderer;
+            m_renderer->setVertices(m_dataLoader->getVertices());
+            // m_renderer->init();
+            std::cout << window()->screen()->size().width() << " " << window()->screen()->size().height() << "\n";
+            connect(window(), &QQuickWindow::beforeRendering, m_renderer, &Renderer::init, Qt::DirectConnection);
+            connect(window(), &QQuickWindow::beforeRenderPassRecording, m_renderer, &Renderer::paint, Qt::DirectConnection);
         }
 
-        m_renderer->setViewportSize(QSize(width(), height()));
-        m_renderer->setClearColor(QColor(Qt::black));
-        m_renderer->setRotation(0);
-        m_renderer->setZoom(1);
-        m_renderer->setCenter(QPointF(0, 0));
-        m_renderer->render();
+        m_renderer->setViewportSize(window()->size() * window()->devicePixelRatio());
+        m_renderer->setWindow(window());
+
     }
 
     void Map::handleWindowChanged(QQuickWindow *window)
     {
         if (window)
         {
-            connect(window, &QQuickWindow::beforeRendering, this, &Map::sync);
-            connect(window, &QQuickWindow::beforeSynchronizing, this, &Map::sync);
+            std::cout << "Window Changed\n";
+            connect(window, &QQuickWindow::beforeSynchronizing, this, &Map::sync, Qt::DirectConnection);
+            connect(window, &QQuickWindow::sceneGraphInvalidated, this, &Map::cleanup, Qt::DirectConnection);
             window->setColor(QColor(Qt::black));
         }
     }

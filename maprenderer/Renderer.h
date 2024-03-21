@@ -6,6 +6,8 @@
 #include <QtQuick/QQuickWindow>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLFunctions>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace Map
 {
@@ -13,28 +15,23 @@ namespace Map
     {
         Q_OBJECT
     public:
-        Renderer(QQuickItem *parent = nullptr);
         ~Renderer();
 
-        void setViewportSize(const QSize &size);
-        void setClearColor(const QColor &color);
-        void setRotation(float angle);
-        void setZoom(float zoom);
-        void setCenter(const QPointF &center);
+        void setVertices(const std::vector<glm::vec3> &vertices);
 
-        void render();
+        void setViewportSize(const QSize &size);
+        void setWindow(QQuickWindow *window);
 
     public slots:
         void init();
         void paint();
 
     protected:
-        QOpenGLShaderProgram *m_program = nullptr;
         QSize m_viewportSize;
-        QColor m_clearColor;
-        float m_rotation;
-        float m_zoom;
-        QPointF m_center;
+        qreal m_t = 0.0;
+        QOpenGLShaderProgram *m_program = nullptr;
+        QQuickWindow *m_window = nullptr;
+        std::vector<glm::vec3> m_vertices;
     };
 }
 

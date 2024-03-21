@@ -9,13 +9,17 @@ ApplicationWindow {
     title: qsTr("Map Viewer")
 
     Map {
-        width: parent.width
-        height: parent.height
+        width: 200
+        height: 200
+        Rectangle {
+            anchors.fill: parent
+            color: "transparent"
+            border { 
+                width: 1
+                color: "blue"
+            }
+        }
     }
 
-    Rectangle {
-        width: 100
-        height: 100
-        color: "red"
-    }
+
 }
