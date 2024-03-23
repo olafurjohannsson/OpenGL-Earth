@@ -22,10 +22,10 @@ class DataLoader : public QObject
 public:
     DataLoader(QObject *parent = nullptr);
 
-    std::vector<glm::vec3> getVertices() const { return m_vertices; }
+    std::vector<std::vector<glm::vec3>> getVertices() const { return m_vertices; }
 
 private:
-    std::vector<glm::vec3> m_vertices;
+    std::vector<std::vector<glm::vec3>> m_vertices;
 };
 
 #endif // DATA_LOADER_H

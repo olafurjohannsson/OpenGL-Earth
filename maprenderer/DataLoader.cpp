@@ -23,7 +23,7 @@ DataLoader::DataLoader(QObject *parent) : QObject(parent)
     {
         QJsonObject properties = feature.toObject().value("properties").toObject();
         QString name = properties.value("name").toString();
-        if (name == "Iceland")
+        if (name == "Spain")
         {
             std::cout << "Iceland found\n";
             QJsonObject geometry = feature.toObject().value("geometry").toObject();
@@ -32,71 +32,13 @@ DataLoader::DataLoader(QObject *parent) : QObject(parent)
 
             std::cout << "name: " << name.toStdString() << "\n";
             std::cout << "type: " << type.toStdString() << "\n";
-            if (true || type == "Polygon")
+            if (type == "MultiPolygon")
             {
-                // Assuming easting_min, easting_max, northing_min, northing_max are the minimum and maximum values of your UTM coordinates
-                double easting_min = std::numeric_limits<double>::max();
-                double easting_max = std::numeric_limits<double>::lowest();
-                double northing_min = std::numeric_limits<double>::max();
-                double northing_max = std::numeric_limits<double>::lowest();
-
-                // Create a scaling matrix to normalize the UTM coordinates to the range [0, 1]
-                glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f / (easting_max - easting_min), 1.0f / (northing_max - northing_min), 1.0f));
-
-                // Create a translation matrix to shift the normalized coordinates to the range [-1, 1]
-                glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, -1.0f, 0.0f));
-
-                // std::cout << "coordinates: " << coordinates.size() << "\n";
-
-                // for (const QJsonValue &coordinate : coordinates)
-                // {
-                //     std::cout << "coordinate: " << coordinate.toArray().size() << "\n";
-                //     for (const QJsonValue &innerCoordinates : coordinate.toArray())
-                //     {
-                //         std::cout << "point: " << innerCoordinates.toArray().size() << "\n";
-                //         for (const QJsonValue &point : innerCoordinates.toArray())
-                //         {
-                //             const QJsonArray pointArray = point.toArray();
-                //             std::cout << "point: " << pointArray.at(0).toDouble() << " " << pointArray.at(1).toDouble() << "\n";
-                //         }
-                //     }
-                // }
-
                 for (const QJsonValue &coordinate : coordinates)
                 {
                     for (const QJsonValue &innerCoordinates : coordinate.toArray())
                     {
-                        for (const QJsonValue &point : innerCoordinates.toArray())
-                        {
-                            const QJsonArray pointArray = point.toArray();
-                            double lon = pointArray.at(0).toDouble();
-                            double lat = pointArray.at(1).toDouble();
-
-                            PJ_COORD a, b;
-                            a = proj_coord(lon, lat, 0, 0);
-                            b = proj_trans(P, PJ_FWD, a);
-                            if (b.xyzt.x == HUGE_VAL)
-                            {
-                                std::cout << "Transformation failed\n";
-                                return;
-                            }
-
-                            easting_min = std::min(easting_min, b.enu.e);
-                            easting_max = std::max(easting_max, b.enu.e);
-                            northing_min = std::min(northing_min, b.enu.n);
-                            northing_max = std::max(northing_max, b.enu.n);
-                        }
-                    }
-                }
-                std::cout << "easting_min: " << easting_min << "\n";
-                std::cout << "easting_max: " << easting_max << "\n";
-                std::cout << "northing_min: " << northing_min << "\n";
-                std::cout << "northing_max: " << northing_max << "\n";
-                
-                for (const QJsonValue &coordinate : coordinates)
-                {
-                    for (const QJsonValue &innerCoordinates : coordinate.toArray())
-                    {
+                        std::vector<glm::vec3> polygon;
                         for (const QJsonValue &point : innerCoordinates.toArray())
                         {
                             const QJsonArray pointArray = point.toArray();
@@ -112,23 +54,45 @@ DataLoader::DataLoader(QObject *parent) : QObject(parent)
                                 std::cout << "Transformation failed\n";
                                 return;
                             }
-                            // std::cout << "point: " << point.at(0).toDouble() << " " << point.at(1).toDouble() << "\n";
-                            // std::cout << "point: " << b.enu.e << " " << b.enu.n << "\n";
 
-                            // Create a glm::vec3 from your UTM coordinates
-                            glm::vec3 utm_coords(b.enu.e, b.enu.n, 0.0f);
+                            // Convert longitude and latitude to radians
+                            float lonRad = glm::radians(lon);
+                            float latRad = glm::radians(lat);
 
-                            // Normalize the UTM coordinates to the range [0, 1]
-                            glm::vec3 normalized_coords = (utm_coords - glm::vec3(easting_min, northing_min, 0.0f)) / glm::vec3(easting_max - easting_min, northing_max - northing_min, 1.0f);
+                            // Convert to Cartesian coordinates
+                            float x = glm::cos(latRad) * glm::cos(lonRad);
+                            float y = glm::cos(latRad) * glm::sin(lonRad);
 
-                            // Translate the normalized coordinates to the range [-1, 1]
-                            glm::vec3 opengl_coords = normalized_coords * 2.0f - glm::vec3(1.0f, 1.0f, 0.0f);
+                            // Scale and translate the coordinates so they fit in the range [-1, 1]
+                            x = x / M_PI + 0.5f;
+                            y = y / (2.0f * M_PI) + 0.5f;
+
+                            std::cout << "x: " << x << " y: " << y << "\n";
+                            glm::vec3 cartesian(x, y, 0.0f);
+
+
+                            // Normalize longitude and latitude to the range [-1, 1]
+                            double normalized_lon = lon / 180.0;
+                            double normalized_lat = lat / 90.0;
+
+                            // Map normalized coordinates to the range [0, width] for x and [0, height] for y
+                            double mapped_lon = (normalized_lon + 1.0) * 0.5 * 1280;
+                            double mapped_lat = (normalized_lat + 1.0) * 0.5 * 960;
+
+                            // Create a glm::vec3 from your normalized coordinates
+                            glm::vec3 opengl_coords(normalized_lon, normalized_lat, 0.0f);
+                            glm::vec3 lonLat(lon, lat, 0.0f);
+
+                            glm::vec3 mapped_coords(mapped_lon, mapped_lat, 0.0f);
 
                             // Now opengl_coords contains your OpenGL coordinates
-                            std::cout << "OpenGL coordinates: " << opengl_coords.x << " " << opengl_coords.y << "\n";
+                            // std::cout << "OpenGL coordinates: " << opengl_coords.x << " " << opengl_coords.y << "\n";
+                            // std::cout << "Mapped coordinates: " << mapped_coords.x << " " << mapped_coords.y << "\n";
+                            
 
-                            m_vertices.push_back(opengl_coords);
+                            polygon.push_back(mapped_coords);
                         }
+                        m_vertices.push_back(polygon);
                     }
                 }
             }

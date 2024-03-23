@@ -10,6 +10,8 @@ namespace Map
         std::cout << "Map Created width: " << width() << " height: " << height() << "\n";
         m_dataLoader = std::make_unique< DataLoader >();
         connect(this, &QQuickItem::windowChanged, this, &Map::handleWindowChanged);
+
+        setAcceptedMouseButtons(Qt::LeftButton);
     }
 
     void Map::cleanup()
@@ -37,6 +39,15 @@ namespace Map
         m_renderer->setViewportSize(window()->size() * window()->devicePixelRatio());
         m_renderer->setWindow(window());
 
+    }
+
+    void Map::render()
+    {
+        std::cout << "Render\n";
+        if (m_renderer)
+        {
+            m_renderer->paint();
+        }
     }
 
     void Map::handleWindowChanged(QQuickWindow *window)

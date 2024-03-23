@@ -4,13 +4,14 @@ import Map 1.0
 
 ApplicationWindow {
     visible: true
-    width: 640
-    height: 480
+    width: 1280
+    height: 960
     title: qsTr("Map Viewer")
 
     Map {
-        width: 200
-        height: 200
+        id: mapId
+        width: parent.width
+        height: parent.height
         Rectangle {
             anchors.fill: parent
             color: "transparent"
@@ -19,6 +20,12 @@ ApplicationWindow {
                 color: "blue"
             }
         }
+        // MouseArea {
+        //     anchors.fill: parent
+        //     onClicked: {
+        //         mapId.render()
+        //     }
+        // }
     }
 
 
