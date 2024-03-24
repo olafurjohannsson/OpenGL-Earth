@@ -12,20 +12,6 @@ ApplicationWindow {
         id: mapId
         width: parent.width
         height: parent.height
-        Rectangle {
-            anchors.fill: parent
-            color: "transparent"
-            border { 
-                width: 1
-                color: "blue"
-            }
-        }
-        // MouseArea {
-        //     anchors.fill: parent
-        //     onClicked: {
-        //         mapId.render()
-        //     }
-        // }
     }
 
 

@@ -20,6 +20,8 @@ set(SOURCES
     Renderer.cpp
     Map.cpp
     DataLoader.cpp
+    Coordinate.cpp
+    Polygon.cpp
 )
 # find proj library
 find_library(PROJ_LIB NAMES proj)

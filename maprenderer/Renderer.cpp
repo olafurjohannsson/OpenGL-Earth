@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Coordinate.h"
 
 namespace Map
 {
@@ -42,16 +43,16 @@ namespace Map
 
             const std::string vertexShaderSource = R"(
                 #version 430 core
-                layout (location = 0) in vec3 aPos; // Pass longitude and latitude as a vec2
+                layout (location = 0) in vec2 aPos; // Pass longitude and latitude as a vec2
 
-                uniform mat4 mvpMatrix;
+                uniform mat4 matrix;
                 uniform mat4 projectionMatrix;
 
                void main()
                 {
                     // Pass the vertex coordinates directly to
 
-                    gl_Position = mvpMatrix * vec4(aPos, 1.0);
+                    gl_Position = matrix * vec4(aPos, 0.0, 1.0);
                 }
             )";
             // Fragment shader
@@ -60,7 +61,7 @@ namespace Map
                 out vec4 FragColor;
                 void main()
                 {
-                    FragColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+                    FragColor = vec4(0.2f, 0.2f, 0.2f, 1.0f);
                 }
             )";
 
@@ -75,117 +76,106 @@ namespace Map
 
     void Renderer::zoomIn(int x, int y)
     {
-        std::cout << "Zoom Out x: " << x << " y: " << y << "\n";
-        m_zoomFactor += 0.05f;
+        m_zoomFactor *= 1.1f;
+        m_centerX = m_viewportSize.width() / 2.0f;
+        m_centerY = m_viewportSize.height() / 2.0f;
         m_window->update();
     }
     void Renderer::zoomOut(int x, int y)
     {
-        std::cout << "Zoom Out x: " << x << " y: " << y << "\n";
-        m_zoomFactor -= 0.05f;
+        m_zoomFactor /= 1.1f;
+        m_centerX = m_viewportSize.width() / 2.0f;
+        m_centerY = m_viewportSize.height() / 2.0f;
         m_window->update();
     }
     Renderer::~Renderer()
     {
-        std::cout << "Renderer dtor\n";
         delete m_program;
     }
-    void Renderer::setVertices(const std::vector<std::vector<glm::vec3>> &vertices)
+    void Renderer::setPolygons(const std::vector<Polygon> &polygons)
+    {
+        m_polygons = polygons;
+    }
+    void Renderer::setVertices(const std::vector<std::vector<Coordinate>> &vertices)
     {
         m_vertices = vertices;
     }
-    void Renderer::pan()
+    void Renderer::pan(const glm::vec2 &offset)
     {
-        std::cout << "pan\n";
+        // m_centerX += offset.x;
+        // m_centerY += offset.y;
+        // Convert the offset from Cartesian coordinates to spherical coordinates
+        double deltaLongitude = offset.x / (m_zoomFactor * 6371.0);
+        double deltaLatitude = offset.y / (m_zoomFactor * 6371.0);
 
-        m_centerY += 1;
+        // Apply the offset to the center of the view
+        m_centerLongitude += glm::degrees(deltaLongitude);
+        m_centerLatitude += glm::degrees(deltaLatitude);
+
+        // Ensure the longitude is within [-180, 180]
+        if (m_centerLongitude > 180.0)
+            m_centerLongitude -= 360.0;
+        else if (m_centerLongitude < -180.0)
+            m_centerLongitude += 360.0;
+
+        // Ensure the latitude is within [-90, 90]
+        if (m_centerLatitude > 90.0)
+            m_centerLatitude = 90.0;
+        else if (m_centerLatitude < -90.0)
+            m_centerLatitude = -90.0;
 
         m_window->update();
     }
-    void Renderer::panLeft()
-    {
-        m_centerX -= 1;
-        m_window->update();
-    }
-    void Renderer::panRight()
-    {
-        m_centerX += 1;
-        m_window->update();
-    }
-    void Renderer::panUp()
-    {
-        m_centerY -= 1;
-        m_window->update();
-    }
-    void Renderer::panDown()
-    {
-        m_centerY += 1;
-        m_window->update();
-    }
+
     void Renderer::paint()
     {
-        std::cout << "paint " << m_viewportSize.width() << " " << m_viewportSize.height() << "\n";
-
-        // Play nice with the RHI. Not strictly needed when the scenegraph uses
-        // OpenGL directly.
         m_window->beginExternalCommands();
         m_program->bind();
         m_program->enableAttributeArray(0);
 
-        // Define the vertices of the triangle
-
-        // This example relies on (deprecated) client-side pointers for the vertex
-        // input. Therefore, we have to make sure no vertex buffer is bound.
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // View matrix
         glm::mat4 viewMatrix = glm::mat4(1.0f); // Identity matrix
 
-        // Projection matrix
         float width = m_viewportSize.width();
         float height = m_viewportSize.height();
-        std::cout << "width: " << width << " height: " << height << "\n";
-        // m_modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(m_zoomFactor, m_zoomFactor, 1.0f));
-
-        // glm::mat4 projectionMatrix = glm::ortho(m_centerX - width / 2.0f, m_centerX + width / 2.0f,
-        //                                         m_centerY - height / 2.0f, m_centerY + height / 2.0f,
-        //                                         -1000.0f, 1000.0f);
-        // glm::mat4 projectionMatrix = glm::ortho(0.0f, width, 0.0f, height, -1000.0f, 1000.0f);
 
         float left = m_centerX - m_zoomFactor * width / 2.0f;
         float right = m_centerX + m_zoomFactor * width / 2.0f;
         float bottom = m_centerY - m_zoomFactor * height / 2.0f;
         float top = m_centerY + m_zoomFactor * height / 2.0f;
-
         glm::mat4 projectionMatrix = glm::ortho(left, right, bottom, top);
 
-        // m_modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-m_centerX, -m_centerY, 0.f));
-        // m_modelMatrix = glm::scale(m_modelMatrix, glm::vec3(m_zoomFactor, m_zoomFactor, 1.0f));
-        // m_modelMatrix = glm::translate(m_modelMatrix, glm::vec3(m_centerX, m_centerY, 0.f));
+        float fov = glm::radians(45.0f); // 45 degrees
+        float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+        float nearPlane = 0.1f;
+        float farPlane = 100.0f;
 
-        // Combine into a single matrix
-        glm::mat4 mvpMatrix = projectionMatrix * viewMatrix * m_modelMatrix;
+        glm::mat4 perspectiveMatrix = glm::perspective(fov, aspectRatio, nearPlane, farPlane);
+
+        // Create a scale matrix for zooming
+        glm::mat4 projection = glm::ortho(0.f, width, 0.f, height);
+        glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(m_zoomFactor, m_zoomFactor, 1.0f));
+        glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-m_centerX * m_zoomFactor, -m_centerY * m_zoomFactor, 0.f));
+        glm::mat4 matrix = projection * scaleMatrix * translationMatrix;
 
         // glViewport(0, 480 - 200, 200, 200);
         glViewport(0, 0, width, height);
-        glClearColor(0, 0, 0, 1);
 
-        glClear(GL_COLOR_BUFFER_BIT);
-        glDisable(GL_DEPTH_TEST);
+        glClearColor(1 / 255.f, 19 / 255.f, 34 / 255.f, 1.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // glDisable(GL_DEPTH_TEST);
 
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        // glEnable(GL_BLEND);
+        // glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-        GLint location = glGetUniformLocation(m_program->programId(), "projectionMatrix");
+        GLint location = glGetUniformLocation(m_program->programId(), "matrix");
         glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-        GLint mvpLocation = glGetUniformLocation(m_program->programId(), "mvpMatrix");
-        glUniformMatrix4fv(mvpLocation, 1, GL_FALSE, glm::value_ptr(mvpMatrix));
 
-        for (std::vector<glm::vec3> polygon : m_vertices)
+        for (const Polygon &polygon : m_polygons)
         {
-            m_program->setAttributeArray(0, GL_FLOAT, polygon.data(), 3);
-
-            // Draw the triangle
+            m_program->setAttributeArray(0, GL_FLOAT, polygon.data(), 2);
             glDrawArrays(GL_LINE_STRIP, 0, polygon.size());
         }
 

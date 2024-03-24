@@ -8,6 +8,8 @@
 #include <QOpenGLFunctions>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "Coordinate.h"
+#include "Polygon.h"
 
 namespace Map
 {
@@ -18,8 +20,8 @@ namespace Map
 
         ~Renderer();
 
-        void setVertices(const std::vector<std::vector<glm::vec3>> &vertices);
-
+        void setVertices(const std::vector<std::vector<Coordinate>> &vertices);
+        void setPolygons(const std::vector<Polygon> &polygons);
         void setViewportSize(const QSize &size);
         void setWindow(QQuickWindow *window);
 
@@ -28,7 +30,8 @@ namespace Map
         void panUp();
         void panDown();
 
-        void pan();
+
+        void pan(const glm::vec2 &direction);
         void zoomIn(int x, int y);
         void zoomOut(int x, int y);
 
@@ -41,8 +44,8 @@ namespace Map
         qreal m_t = 0.0;
         QOpenGLShaderProgram *m_program = nullptr;
         QQuickWindow *m_window = nullptr;
-        std::vector<std::vector<glm::vec3>> m_vertices;
-
+        std::vector<std::vector<Coordinate>> m_vertices;
+        std::vector<Polygon> m_polygons;
         float m_zoomFactor = 1.0f;
         glm::mat4 m_modelMatrix = glm::mat4(1.0f);
         float m_centerX;

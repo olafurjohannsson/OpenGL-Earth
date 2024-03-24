@@ -18,7 +18,7 @@ namespace Map
     public:
         Map(QQuickItem *parent = nullptr);
 
-        glm::vec2 m_delta;
+        glm::vec2 m_previousPosition;
         glm::vec2 m_center = glm::vec2(1280, 960);
         bool m_holdingDownButton = false;
 
@@ -26,33 +26,15 @@ namespace Map
         {
             if (m_holdingDownButton)
             {
-                glm::vec2 currentPosition = glm::vec2(event->position().x(), event->position().y());
-                std::cout << "holding down btn: " << event->position().x() << ":" << event->position().y() << "\n";
+                glm::vec2 currentPosition = glm::vec2(event->position().x(), window()->height() - event->position().y());
 
-                auto delta = m_center - currentPosition;
+                // Calculate pan direction based on the difference between the current and previous cursor position
+                glm::vec2 offset = currentPosition - m_previousPosition;
 
-                if ((m_delta - delta).x > 0)
-                {
-                    m_renderer->panRight();
-                }
-                else if ((m_delta - delta).x < 0)
-                {
-                    m_renderer->panLeft();
-                }
-                else if ((m_delta - delta).y > 0)
-                {
-                    m_renderer->panUp();
-                }
-                else if ((m_delta - delta).y < 0)
-                {
-                    m_renderer->panDown();
-                }
+                m_previousPosition = currentPosition;
 
-                std::cout << (m_delta - delta).x << ":" << (m_delta - delta).y << "\n";
-
-                m_delta = delta;
-                std::cout << "delta: " << delta.x << ":" << delta.y << "\n";
-                // m_renderer->pan();
+                // Pass pan direction to a single pan method
+                m_renderer->pan(offset);
             }
         }
 
@@ -62,6 +44,7 @@ namespace Map
             if (event->button() == Qt::LeftButton)
             {
                 m_holdingDownButton = true;
+                m_previousPosition = glm::vec2(event->position().x(), window()->height() - event->position().y());
             }
         }
         void mouseReleaseEvent(QMouseEvent *event) override
@@ -75,7 +58,7 @@ namespace Map
 
         void wheelEvent(QWheelEvent *event) override
         {
-            auto zoomIn = event->angleDelta().y() > 0, zoomOut = event->angleDelta().y() < 0;
+            auto zoomOut = event->angleDelta().y() > 0, zoomIn = event->angleDelta().y() < 0;
 
             if (zoomIn)
             {

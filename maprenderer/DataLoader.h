@@ -15,6 +15,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "Coordinate.h"
+#include "Polygon.h"
+
 class DataLoader : public QObject
 {
     Q_OBJECT
@@ -22,10 +25,12 @@ class DataLoader : public QObject
 public:
     DataLoader(QObject *parent = nullptr);
 
-    std::vector<std::vector<glm::vec3>> getVertices() const { return m_vertices; }
+    std::vector<std::vector<Coordinate>> getVertices() const { return m_vertices; }
+    std::vector<Polygon> getPolygons() const { return m_polygons; }
 
 private:
-    std::vector<std::vector<glm::vec3>> m_vertices;
+    std::vector<std::vector<Coordinate>> m_vertices;
+    std::vector<Polygon> m_polygons;
 };
 
 #endif // DATA_LOADER_H
