@@ -5,7 +5,8 @@
 #include <iostream>
 #include "Renderer.h"
 #include <memory>
-#include "DataLoader.h"
+#include "lib/GeographicLoader.h"
+#include "lib/Projection.h"
 #include <glm/glm.hpp>
 
 namespace Map
@@ -40,7 +41,6 @@ namespace Map
 
         void mousePressEvent(QMouseEvent *event) override
         {
-            std::cout << event->button() << "-" << Qt::LeftButton << "\n";
             if (event->button() == Qt::LeftButton)
             {
                 m_holdingDownButton = true;
@@ -51,7 +51,6 @@ namespace Map
         {
             if (event->button() == Qt::LeftButton)
             {
-                std::cout << "leftBtn release";
                 m_holdingDownButton = false;
             }
         }
@@ -80,8 +79,10 @@ namespace Map
         void handleWindowChanged(QQuickWindow *window);
 
     protected:
+        // We keep the renderer as a raw pointer because qt is responsible for deleting it
         Renderer *m_renderer{nullptr};
-        std::unique_ptr<DataLoader> m_dataLoader{nullptr};
+        std::unique_ptr<GeographicLoader> m_geographicLoader{nullptr};
+        std::unique_ptr< Projection> m_projection{nullptr};
     };
 }
 

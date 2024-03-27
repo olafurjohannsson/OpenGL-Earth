@@ -19,9 +19,10 @@ find_package(OpenGL REQUIRED)
 set(SOURCES 
     Renderer.cpp
     Map.cpp
-    DataLoader.cpp
-    Coordinate.cpp
-    Polygon.cpp
+    lib/Coordinate.cpp
+    lib/GeographicLoader.cpp
+    lib/Polygon.cpp
+    lib/Projection.cpp
 )
 # find proj library
 find_library(PROJ_LIB NAMES proj)
