@@ -28,12 +28,13 @@ namespace Map
         void setViewportSize(const QSize &size);
         void setWindow(QQuickWindow *window);
 
-        void updateMatrix();
+        void updateMatrix(const glm::mat4 &matrix);
 
         void pan(const glm::vec2 &direction);
         void zoomIn(int x, int y);
         void zoomOut(int x, int y);
-
+        void setZoom(float zoom);
+        void test(int x, int y);
 
     public slots:
         void init();

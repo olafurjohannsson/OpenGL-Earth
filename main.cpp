@@ -8,6 +8,8 @@
 #include <QJsonObject>
 
 #include <Map.h>
+#include <lib/Transformation.h>
+#include <lib/Projection.h>
 
 
 int main(int argc, char *argv[])
@@ -15,8 +17,6 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
     qmlRegisterType<Map::Map>("Map", 1, 0, "Map");
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
-
-    
 
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/qml/main.qml"));

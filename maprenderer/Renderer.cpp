@@ -1,7 +1,7 @@
 
 
 #include "Renderer.h"
-
+#include "lib/Transformation.h"
 
 namespace Map
 {
@@ -42,15 +42,11 @@ namespace Map
     void Renderer::zoomIn(int x, int y)
     {
         m_zoomFactor *= 1.1f;
-        m_centerX = m_viewportSize.width() / 2.0f;
-        m_centerY = m_viewportSize.height() / 2.0f;
         m_window->update();
     }
     void Renderer::zoomOut(int x, int y)
     {
         m_zoomFactor /= 1.1f;
-        m_centerX = m_viewportSize.width() / 2.0f;
-        m_centerY = m_viewportSize.height() / 2.0f;
         m_window->update();
     }
     Renderer::~Renderer()
@@ -61,37 +57,26 @@ namespace Map
     {
         m_polygons = polygons;
     }
-
+    void Renderer::setZoom(float zoom)
+    {
+        m_zoomFactor = zoom;
+        if(m_window) {
+            m_window->update();
+        }
+    }
     void Renderer::pan(const glm::vec2 &offset)
     {
         m_centerX += offset.x;
         m_centerY += offset.y;
-        // Convert the offset from Cartesian coordinates to spherical coordinates
-        double deltaLongitude = offset.x / (m_zoomFactor * 6371.0);
-        double deltaLatitude = offset.y / (m_zoomFactor * 6371.0);
 
-        // Apply the offset to the center of the view
-        m_centerLongitude += glm::degrees(deltaLongitude);
-        m_centerLatitude += glm::degrees(deltaLatitude);
-
-        // Ensure the longitude is within [-180, 180]
-        if (m_centerLongitude > 180.0)
-            m_centerLongitude -= 360.0;
-        else if (m_centerLongitude < -180.0)
-            m_centerLongitude += 360.0;
-
-        // Ensure the latitude is within [-90, 90]
-        if (m_centerLatitude > 90.0)
-            m_centerLatitude = 90.0;
-        else if (m_centerLatitude < -90.0)
-            m_centerLatitude = -90.0;
 
         m_window->update();
     }
 
 
-    void Renderer::updateMatrix()
+    void Renderer::updateMatrix(const glm::mat4 &matrix)
     {
+        // m_matrix = matrix;
         float width = m_viewportSize.width();
         float height = m_viewportSize.height();
 
@@ -100,23 +85,25 @@ namespace Map
         float bottom = m_centerY - m_zoomFactor * height / 2.0f;
         float top = m_centerY + m_zoomFactor * height / 2.0f;
         glm::mat4 projectionMatrix = glm::ortho(left, right, bottom, top);
+        // m_matrix = projectionMatrix;
+        m_matrix = matrix;
+        if(m_window) {
+            m_window->update();
+        }
 
-        m_matrix = projectionMatrix;
-
-        // float fov = glm::radians(45.0f); // 45 degrees
-        // float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-        // float nearPlane = 0.1f;
-        // float farPlane = 100.0f;
-
-        // glm::mat4 perspectiveMatrix = glm::perspective(fov, aspectRatio, nearPlane, farPlane);
-
-        // // Create a scale matrix for zooming
         // glm::mat4 projection = glm::ortho(0.f, width, 0.f, height);
+        // glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-m_centerX, -m_centerY, 0.f));
         // glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(m_zoomFactor, m_zoomFactor, 1.0f));
-        // glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-m_centerX * m_zoomFactor, -m_centerY * m_zoomFactor, 0.f));
-        // glm::mat4 matrix = projection * scaleMatrix * translationMatrix;
-    }
+        // m_matrix = projection * translationMatrix * scaleMatrix;
 
+
+    }
+    void Renderer::test(int x, int y)
+    {
+        auto vec = m_matrix * glm::vec4(x, y, 0, 1);
+
+        std::cout << "x: " << vec.x << " y: " << vec.y << "\n";
+    }
     void Renderer::paint()
     {
         m_window->beginExternalCommands();
@@ -125,7 +112,7 @@ namespace Map
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        updateMatrix();
+        // updateMatrix();
 
         glViewport(0, 0, m_viewportSize.width(), m_viewportSize.height());
 

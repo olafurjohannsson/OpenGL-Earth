@@ -23,6 +23,7 @@ set(SOURCES
     lib/GeographicLoader.cpp
     lib/Polygon.cpp
     lib/Projection.cpp
+    lib/Transformation.cpp
 )
 # find proj library
 find_library(PROJ_LIB NAMES proj)

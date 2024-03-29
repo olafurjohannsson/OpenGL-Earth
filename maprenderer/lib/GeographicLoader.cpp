@@ -63,8 +63,10 @@ void GeographicLoader::project(const Projection &projection)
         std::vector<glm::vec2> vertices;
         for (Coordinate const &coordinate : polygon.coordinates())
         {
-            const glm::vec2 &vertex = projection.project(coordinate.getLongitude(), coordinate.getLatitude());
-            vertices.push_back(vertex);
+            if (auto project = projection.project(coordinate.getLongitude(), coordinate.getLatitude()); project.has_value())
+            {
+                vertices.push_back(project.value());
+            }
         }
         polygon.setVertices(vertices);
     }
