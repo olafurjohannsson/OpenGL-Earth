@@ -1,40 +1,47 @@
 #version 430 core
-layout (location = 0) in vec2 vertex; // Pass longitude and latitude as a vec2
+layout (location = 0) in vec2 vertex; // Pass longitude and latitude as radians in a vec2 structure
 
 #define PI 3.1415926535897932384626433832795
 
+
+/**
+    
+    Vertex Shader
+
+    This shaderfile computes map projections
+    All vertex input is in radians, and the origin/center is also in radians
+    The reason that the computation is done in the shader is because these mathematical projections
+    are not linear, therefore when the origin changes, all vertex coordinates change relatie
+    to the origin, so if we would do this in C++ we would have to re-compute everything when we pan/zoom,
+    but doing it in the shader is much more computationally efficient.
+
+
+*/
+
+
+//
+/// Rotation matrix handles creating an axis and angle around an origin point, used for Orthographic projection
 uniform mat4 rotationMatrix;
+
+//
+/// Projection matrix converts radians to clip-space, so it handles converting [-2PI,2PI] to [-1,1]
 uniform mat4 projectionMatrix;
+
+//
+/// Scale matrix handles zooming by applying a scaling matrix on our projected points
 uniform mat4 scaleMatrix;
+
+//
+/// Center, or the origin point is the point which all projected points are relative to and rendered
 uniform vec2 center;
+
+//
+/// Which projection to render, so we can change at runtime
 uniform int projectionType;
 
-vec3 rotate(vec3 point, vec2 center) {
-    // Convert the center to Cartesian coordinates
-    vec3 centerPoint = vec3(
-        cos(center.y) * cos(center.x),
-        cos(center.y) * sin(center.x),
-        sin(center.y)
-    );
-
-    // Calculate the rotation axis and angle
-    vec3 axis = cross(centerPoint, vec3(0.0, 0.0, 1.0));
-    float angle = acos(dot(centerPoint, vec3(0.0, 0.0, 1.0)));
-
-    // Calculate the rotation matrix
-    float c = cos(angle);
-    float s = sin(angle);
-    float t = 1.0 - c;
-    mat3 rotation = mat3(
-        t * axis.x * axis.x + c,          t * axis.x * axis.y - s * axis.z,  t * axis.x * axis.z + s * axis.y,
-        t * axis.x * axis.y + s * axis.z,  t * axis.y * axis.y + c,           t * axis.y * axis.z - s * axis.x,
-        t * axis.x * axis.z - s * axis.y,  t * axis.y * axis.z + s * axis.x,  t * axis.z * axis.z + c
-    );
-
-    // Rotate the point
-    return rotation * point;
-}
-
+/**
+    Apply Stereographic map projection on position relative to origin
+*/
 vec3 stereographic(vec2 position, vec2 center)
 {
     // Convert the center longitude and latitude to radians 
@@ -51,29 +58,10 @@ vec3 stereographic(vec2 position, vec2 center)
     float z = 0.0;
     return vec3(x, y, z);
 }
-vec3 azimuthalEqualArea(vec2 position, vec2 center)
-{
-    // Subtract the center from the longitude and latitude
-    float lon = position.x - center.x;
-    float lat = position.y - center.y;
 
-    // Calculate intermediate values
-    float sinLat = sin(lat);
-    float cosLat = cos(lat);
-    float sinLon = sin(lon);
-    float cosLon = cos(lon);
-    float sinCenterLat = sin(center.y);
-    float cosCenterLat = cos(center.y);
-
-    // Calculate the scale factor
-    float q = (1 + sinCenterLat * sinLat + cosCenterLat * cosLat * cosLon) / 2;
-
-    // Calculate x and y coordinates
-    float x = sqrt(2 / q) * cosLat * sinLon;
-    float y = sqrt(2 / q) * (cosCenterLat * sinLat - sinCenterLat * cosLat * cosLon);
-
-    return vec3(x, y, 0.0);
-}
+/**
+    Apply Mercator map projection on position relative to origin
+*/
 vec3 mercator(vec2 position, vec2 center)
 {
     // Subtract the center from the longitude and latitude
@@ -85,6 +73,10 @@ vec3 mercator(vec2 position, vec2 center)
     float y = log(tan(0.25 * PI + 0.5 * lat));
     return vec3(x, y, 0.0);
 }
+
+/**
+    Apply Orthographic map projection on position relative to origin, with a rotation matrix
+*/
 vec3 orthographic(vec2 position, vec2 center)
 {
     // Convert the position to Cartesian coordinates
@@ -94,7 +86,8 @@ vec3 orthographic(vec2 position, vec2 center)
         sin(position.y)
     );
 
-    // Rotate the point
+    // We need to handle the orthographic matrix also with a rotation matrix, we need to apply a spherical rotation before
+    // Applying the projection. The rotation brings the center of the projection to the origin of the coordinate system.
     point = vec3(rotationMatrix * vec4(point, 1.0));
 
     // Apply the orthographic projection
@@ -105,31 +98,23 @@ vec3 orthographic(vec2 position, vec2 center)
 
 void main()
 {
-    // Linear Transformation
-    if (projectionType == 0) 
+    // Projection matrix handles converting the vertex to clip-space
+    // Scale matrix handles zooming
+    if (projectionType == 1) 
     {
-        gl_Position = projectionMatrix * vec4(vertex.xy, 1.0, 1.0);
-    } 
-    else if (projectionType == 1) 
-    {
-        gl_Position = projectionMatrix * vec4(mercator(vertex.xy, center), 1.0);
+        gl_Position = projectionMatrix * scaleMatrix * vec4(mercator(vertex.xy, center), 1.0);
     } 
     else if (projectionType == 2) 
     {
-        gl_Position = projectionMatrix * vec4(stereographic(vertex.xy, center), 1.0);
+        gl_Position = projectionMatrix * scaleMatrix * vec4(stereographic(vertex.xy, center), 1.0);
     } 
     else if (projectionType == 3) 
     {
-        // We need to handle the orthographic matrix also with a rotation matrix, we need to apply a spherical rotation before
-        // Applying the projection. The rotation brings the center of the projection to the origin of the coordinate system.
-        gl_Position = projectionMatrix * vec4(orthographic(vertex.xy, center), 1.0);   
-    } 
-    else if (projectionType == 4) 
-    {
-        gl_Position = projectionMatrix * vec4(azimuthalEqualArea(vertex.xy, center), 1.0);
+        gl_Position = projectionMatrix * scaleMatrix * vec4(orthographic(vertex.xy, center), 1.0);   
     } 
     else 
     {
-        gl_Position = projectionMatrix * vec4(vertex.xy, 1.0, 1.0);
+        // Linear Transformation
+        gl_Position = projectionMatrix * scaleMatrix * vec4(vertex.xy, 1.0, 1.0);
     }
 }

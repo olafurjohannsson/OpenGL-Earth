@@ -23,7 +23,6 @@ set(SOURCES
     GeographicLoader.cpp
     Polygon.cpp
     Projection.cpp
-    Transformation.cpp
     Earcut.h
 )
 # find proj library
@@ -31,17 +30,6 @@ find_library(PROJ_LIB NAMES proj)
 if (NOT PROJ_LIB)
     message(FATAL_ERROR "PROJ library not found")
 endif()
-# Add shader files
-# set(SHADER_FILES
-#     shaders/vertex.glsl
-#     shaders/fragment.glsl
-# )
-
-# qt6_add_resources(${PROJECT_NAME} "shaders"
-#     PREFIX "/"
-#     FILES
-#         ${SHADER_FILES}
-# )
 
 # Define the library name
 set(LIB_NAME MapRenderer)

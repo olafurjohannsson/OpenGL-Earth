@@ -33,6 +33,8 @@ namespace Map
         void hoverMoveEvent(QHoverEvent *event) override;
         void wheelEvent(QWheelEvent *event) override;
 
+        Q_INVOKABLE void setProjection(const QString &projectionTypeString);
+
     signals:
         void cursorCoordinateChanged();
         void zoomChanged();

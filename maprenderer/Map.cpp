@@ -65,17 +65,38 @@ namespace Map
     }
     QString Map::cursorCoordinate() const
     {
-        if(auto lonLat = m_projection->unproject(m_cursorPosition.x, m_cursorPosition.y); lonLat.has_value())
-        {
-            auto xy = *lonLat;
-            return "Lon " + QString::number(xy.x) + " Lat " + QString::number(xy.y);
-        }
         return "";
     }
     void Map::hoverMoveEvent(QHoverEvent *event)
     {
         m_cursorPosition = glm::vec2(event->position().x(), window()->height() - event->position().y());
         emit cursorCoordinateChanged();
+    }
+
+    void Map::setProjection(const QString &projectionTypeString)
+    {
+        if (projectionTypeString == "Orthographic")
+        {
+            m_projection->setProjectionType(Projection::ProjectionType::Orthographic);
+        }
+        else if (projectionTypeString == "Mercator")
+        {
+            m_projection->setProjectionType(Projection::ProjectionType::Mercator);
+        }
+        else if (projectionTypeString == "Linear")
+        {
+            m_projection->setProjectionType(Projection::ProjectionType::LinearTransformation);
+        }
+        else if (projectionTypeString == "Stereographic")
+        {
+            m_projection->setProjectionType(Projection::ProjectionType::Stereographic);
+        }
+        m_renderer->setProjectionType(m_projection->projectionType());
+        m_renderer->updateUniforms(
+                    m_projection->getCenter(), 
+                    m_projection->projectionMatrix(), 
+                    m_projection->scaleMatrix(),
+                    m_projection->rotationMatrix());
     }
 
     void Map::mouseMoveEvent(QMouseEvent *event)

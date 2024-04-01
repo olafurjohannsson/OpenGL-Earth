@@ -1,4 +1,5 @@
 #include "GeographicLoader.h"
+#include "Earcut.h"
 
 GeographicLoader::GeographicLoader(const QString &filename)
 {
@@ -61,12 +62,10 @@ void GeographicLoader::project(const Projection &projection)
     for (Polygon &polygon : m_polygons)
     {
         std::vector<glm::vec2> vertices;
+        std::vector<glm::vec2> triangulatedVertices;
         for (Coordinate const &coordinate : polygon.coordinates())
         {
-            if (auto project = projection.project(coordinate.getLongitude(), coordinate.getLatitude()); project.has_value())
-            {
-                vertices.push_back(project.value());
-            }
+            vertices.push_back(glm::radians(glm::vec2(coordinate.getLongitude(), coordinate.getLatitude())));
         }
         polygon.setVertices(vertices);
     }

@@ -1,7 +1,6 @@
 
 
 #include "Renderer.h"
-#include "Transformation.h"
 
 namespace Map
 {
@@ -65,7 +64,10 @@ namespace Map
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         glViewport(0, 0, m_viewportSize.width(), m_viewportSize.height());
+        glDisable(GL_DEPTH_TEST);
 
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
         glClearColor(1 / 255.f, 19 / 255.f, 34 / 255.f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
