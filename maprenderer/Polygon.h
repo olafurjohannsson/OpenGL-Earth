@@ -17,7 +17,10 @@ public:
     const std::vector<Coordinate> &coordinates() const;
 
     void setVertices(const std::vector<glm::vec2> &vertices);
-
+    void clearVertices()
+    {
+        m_vertices.clear();
+    }
     void triangulate();
 
     bool isTriangulated() const;

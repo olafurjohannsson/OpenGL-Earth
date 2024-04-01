@@ -19,11 +19,12 @@ find_package(OpenGL REQUIRED)
 set(SOURCES 
     Renderer.cpp
     Map.cpp
-    lib/Coordinate.cpp
-    lib/GeographicLoader.cpp
-    lib/Polygon.cpp
-    lib/Projection.cpp
-    lib/Transformation.cpp
+    Coordinate.cpp
+    GeographicLoader.cpp
+    Polygon.cpp
+    Projection.cpp
+    Transformation.cpp
+    Earcut.h
 )
 # find proj library
 find_library(PROJ_LIB NAMES proj)

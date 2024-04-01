@@ -12,8 +12,9 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include "lib/Coordinate.h"
-#include "lib/Polygon.h"
+#include "Coordinate.h"
+#include "Polygon.h"
+#include "Projection.h"
 
 namespace Map
 {
@@ -23,22 +24,17 @@ namespace Map
     public:
 
         ~Renderer();
-        void logMouse(float x, float y);
+        
         void setPolygons(const std::vector<Polygon> &polygons);
         void setViewportSize(const QSize &size);
         void setWindow(QQuickWindow *window);
+        void setProjectionType(Projection::ProjectionType type);
+        void updateUniforms(const glm::vec2& center, const glm::mat4 &projectionMatrix, const glm::mat4& scaleMatrix, const glm::mat4& rotationMatrix);
 
-        void updateMatrix(const glm::mat4 &matrix);
-
-        void pan(const glm::vec2 &direction);
-        void zoomIn(int x, int y);
-        void zoomOut(int x, int y);
-        void setZoom(float zoom);
-        void test(int x, int y);
 
     public slots:
-        void init();
-        void paint();
+        void inititalize();
+        void render();
 
     protected:
         QSize m_viewportSize;
@@ -46,14 +42,13 @@ namespace Map
         QQuickWindow *m_window = nullptr;
         
         std::vector<Polygon> m_polygons;
-        float m_zoomFactor = 1.0f;
-        
-        glm::mat4 m_matrix = glm::mat4(1.0f);
+        std::vector<Polygon> m_filledPolygons;
 
-        float m_centerX;
-        float m_centerY;
-        double m_centerLongitude;
-        double m_centerLatitude;
+        Projection::ProjectionType m_projectionType;
+        glm::vec2 m_center = glm::vec2(0.0f, 0.0f);
+        glm::mat4 m_scaleMatrix = glm::mat4(1.0f);
+        glm::mat4 m_projectionMatrix = glm::mat4(1.0f);
+        glm::mat4 m_rotationMatrix = glm::mat4(1.0f);
     };
 }
 

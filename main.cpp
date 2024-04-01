@@ -1,16 +1,7 @@
-#include <iostream>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
-#include <QJsonArray>
-#include <QJsonDocument>
-#include <QFile>
-#include <QJsonObject>
-
 #include <Map.h>
-#include <lib/Transformation.h>
-#include <lib/Projection.h>
-
 
 int main(int argc, char *argv[])
 {
