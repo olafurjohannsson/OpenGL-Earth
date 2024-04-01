@@ -91,6 +91,12 @@ namespace Map
         {
             m_program->setAttributeArray(0, GL_FLOAT, polygon.data(), 2);
             glDrawArrays(GL_LINE_STRIP, 0, polygon.size());
+
+            if(polygon.isTriangulated())
+            {
+                // m_program->setAttributeArray(0, GL_FLOAT, polygon.indices().data(), 2);
+                // glDrawElements(GL_TRIANGLES, polygon.indices().size(), GL_UNSIGNED_INT, nullptr);
+            }
         }
 
         // render triangles for fill

@@ -52,8 +52,7 @@ namespace Map
     
     float Map::zoom() const
     {
-        return 0;
-        // return m_projection->zoomFactor();
+        return m_projection->zoomFactor();
     }
     float Map::centerX() const
     {

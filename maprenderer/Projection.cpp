@@ -84,6 +84,10 @@ glm::mat4 Projection::rotationMatrix() const
 {
     return m_rotationMatrix;
 }
+float Projection::zoomFactor() const
+{
+    return m_zoomFactor;
+}
 void Projection::zoom(float yAngle, const glm::vec2 &screenCoordinates)
 {
     // Calculate the zoom factor based on the yAngle

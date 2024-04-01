@@ -20,6 +20,10 @@ const glm::vec2 *Polygon::data() const
 {
     return m_vertices.data();
 }
+const std::vector<uint32_t> &Polygon::indices() const
+{
+    return m_indices;
+}
 const std::vector<Coordinate> &Polygon::coordinates() const
 {
     return m_coordinates;
@@ -28,9 +32,9 @@ void Polygon::setVertices(const std::vector<glm::vec2> &vertices)
 {
     m_vertices = vertices;
 }
-void Polygon::triangulate()
+void Polygon::setIndices(const std::vector<uint32_t> &indices)
 {
-    // todo: implement triangulation
+    m_indices = indices;
     m_triangulated = true;
 }
 bool Polygon::isTriangulated() const

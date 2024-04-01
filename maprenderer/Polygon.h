@@ -15,23 +15,23 @@ public:
     static Polygon fromJson(const QJsonValue &json);
 
     const std::vector<Coordinate> &coordinates() const;
+    
 
     void setVertices(const std::vector<glm::vec2> &vertices);
-    void clearVertices()
-    {
-        m_vertices.clear();
-    }
-    void triangulate();
+    void setIndices(const std::vector<uint32_t> &indices);
 
     bool isTriangulated() const;
 
-    std::size_t size() const;
 
+    // Data used by OpenGL
+    std::size_t size() const;
     const glm::vec2 *data() const;
+    const std::vector<uint32_t> &indices() const;
 
 private:
     std::vector<Coordinate> m_coordinates;
     std::vector<glm::vec2> m_vertices;
+    std::vector<uint32_t> m_indices;
     bool m_triangulated = false;
 };
 

@@ -1,5 +1,6 @@
 #include "GeographicLoader.h"
 #include "Earcut.h"
+#include <array>
 
 GeographicLoader::GeographicLoader(const QString &filename)
 {
@@ -59,14 +60,24 @@ const std::vector<Polygon> &GeographicLoader::polygons() const
 
 void GeographicLoader::project(const Projection &projection)
 {
+    using Coord = double;
+    using N = uint32_t;
+    using Point = std::array<Coord, 2>;
+
     for (Polygon &polygon : m_polygons)
     {
         std::vector<glm::vec2> vertices;
-        std::vector<glm::vec2> triangulatedVertices;
+        std::vector<std::vector<Point>> triangulatedPolygon;
+        std::vector<Point> polygonVertices;
         for (Coordinate const &coordinate : polygon.coordinates())
         {
-            vertices.push_back(glm::radians(glm::vec2(coordinate.getLongitude(), coordinate.getLatitude())));
+            const auto radians(glm::radians(glm::vec2(coordinate.getLongitude(), coordinate.getLatitude())));
+            vertices.push_back(radians);
+            polygonVertices.push_back(Point{radians.x, radians.y});
         }
+        triangulatedPolygon.push_back(polygonVertices);
         polygon.setVertices(vertices);
+        std::vector<N> indices = mapbox::earcut<N>(triangulatedPolygon);
+        polygon.setIndices(indices);
     }
 }

@@ -47,6 +47,7 @@ public:
     
     // Zoom function
     void zoom(float yAngle, const glm::vec2 &screenCoordinates);
+    float zoomFactor() const;
     
     // Set the offset and center for the projection
     void setOffset(int x, int y);
