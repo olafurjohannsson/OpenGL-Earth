@@ -1,4 +1,4 @@
-# C++ OpenGL Earth
+# C++ OpenGL 2D Map Renderer
 
 C++ application that uses OpenGL to render a map of the world.
 
