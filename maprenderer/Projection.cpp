@@ -23,23 +23,6 @@ void Projection::setCenter(double lon, double lat)
 }
 void Projection::calculateRotationToOrigin()
 {
-    // float lon = m_centerLongitude;
-    // float lat = m_centerLatitude;
-
-    // // Convert the center to Cartesian coordinates
-    // glm::vec3 centerPoint = glm::vec3(
-    //     cos(lat) * cos(lon),
-    //     cos(lat) * sin(lon),
-    //     sin(lat)
-    // );
-
-    // // Calculate the rotation axis and angle
-    // glm::vec3 axis = glm::cross(centerPoint, glm::vec3(0.0f, 0.0f, 1.0f));
-    // float angle = glm::acos(glm::dot(centerPoint, glm::vec3(0.0f, 0.0f, 1.0f)));
-
-    // // Create the rotation matrix
-    // m_rotationMatrix = glm::rotate(glm::mat4(1.0f), angle, axis);
-
     float lon = m_centerLongitude;
     float lat = m_centerLatitude;
 

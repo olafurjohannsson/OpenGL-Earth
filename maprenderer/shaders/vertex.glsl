@@ -44,7 +44,6 @@ uniform int projectionType;
 */
 vec3 stereographic(vec2 position, vec2 center)
 {
-    // Convert the center longitude and latitude to radians 
     float centerLonRad = center.x;
     float centerLatRad = center.y;
 
@@ -64,7 +63,6 @@ vec3 stereographic(vec2 position, vec2 center)
 */
 vec3 mercator(vec2 position, vec2 center)
 {
-    // Subtract the center from the longitude and latitude
     float lon = position.x - center.x;
     float lat = clamp(position.y - center.y, -PI/2.0, PI/2.0);
 

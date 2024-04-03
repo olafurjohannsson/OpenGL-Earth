@@ -21,7 +21,6 @@ namespace Map
     {
         if (nullptr == m_program)
         {
-            // initializeOpenGLFunctions();
             m_program = new QOpenGLShaderProgram();
             m_program->addCacheableShaderFromSourceFile(QOpenGLShader::Vertex, "../maprenderer/shaders/vertex.glsl");
             m_program->addCacheableShaderFromSourceFile(QOpenGLShader::Fragment, "../maprenderer/shaders/fragment.glsl");

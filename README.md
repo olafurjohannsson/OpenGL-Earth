@@ -6,7 +6,11 @@ Qt6 for the window and OpenGL context. And QML for the UI.
 
 glm for matrix calculations and GeoJSON for map data.
 
-Supported projections are 
+Earcut from mapbox is used for triangulation of the map data.
+
+
+
+Vertex shader implements the map projections, supported projections are 
 
 - Mercator
 - Orthographic
@@ -21,3 +25,8 @@ Supported projections are
 ![Mercator](Mercator.png)
 
 
+
+
+Contact 
+
+olafurjohannss@gmail.com
