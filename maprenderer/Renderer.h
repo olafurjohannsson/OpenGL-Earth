@@ -5,23 +5,29 @@
 #include <QtQuick/QQuickItem>
 #include <QtQuick/QQuickWindow>
 #include <QOpenGLShaderProgram>
-#include <QOpenGLFunctions>
+#include <QOpenGLFunctions_4_3_Core>
+#include <QOpenGLVersionFunctionsFactory>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
-#include <sstream>
-#include <fstream>
 #include "Coordinate.h"
 #include "Polygon.h"
 #include "Projection.h"
+#include "OpenGL.h"
 
 namespace Map
 {
-    class Renderer : public QObject, protected QOpenGLFunctions
+    
+
+    class Renderer : public QObject
     {
         Q_OBJECT
     public:
+        Renderer() = default;
+        // disable copy
+        Renderer(const Renderer&) = delete;
+        Renderer& operator=(const Renderer&) = delete;
 
         ~Renderer();
         
@@ -42,13 +48,13 @@ namespace Map
         QQuickWindow *m_window = nullptr;
         
         std::vector<Polygon> m_polygons;
-        std::vector<Polygon> m_filledPolygons;
 
         Projection::ProjectionType m_projectionType;
         glm::vec2 m_center = glm::vec2(0.0f, 0.0f);
         glm::mat4 m_scaleMatrix = glm::mat4(1.0f);
         glm::mat4 m_projectionMatrix = glm::mat4(1.0f);
         glm::mat4 m_rotationMatrix = glm::mat4(1.0f);
+        GLuint m_vaoId;
     };
 }
 

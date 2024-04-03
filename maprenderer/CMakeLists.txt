@@ -24,6 +24,7 @@ set(SOURCES
     Polygon.cpp
     Projection.cpp
     Earcut.h
+    OpenGL.h
 )
 # find proj library
 find_library(PROJ_LIB NAMES proj)

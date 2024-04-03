@@ -1,5 +1,5 @@
 #include "Map.h"
-#include <iostream>
+#include "OpenGL.h"
 
 
 namespace Map
@@ -30,7 +30,7 @@ namespace Map
             // Create projection
             m_projection->setScreenSize(window()->size().width(), window()->size().height());
             m_projection->setCenter(m_defaultLongitude, m_defaultLatitude);
-            
+
             // create renderer, update uniforms and set polygons
             m_renderer = new Renderer;
             m_renderer->updateUniforms(
