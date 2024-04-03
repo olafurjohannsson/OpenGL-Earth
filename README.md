@@ -1,4 +1,4 @@
-# QtMapRenderer
+# C++ OpenGL Earth
 
 C++ application that uses OpenGL to render a map of the world.
 
